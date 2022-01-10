@@ -1,4 +1,4 @@
-from arguments import get_args_parser
+from arguments import get_args_parser, DEVICE
 from templating import get_temps
 from modeling import get_model, get_tokenizer
 from data_prompt import REPromptDataset
@@ -160,15 +160,15 @@ test_dataset = REPromptDataset.load(
 
 train_batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
 
-train_dataset.cuda()
+# train_dataset.cuda()
 train_sampler = RandomSampler(train_dataset)
 train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=train_batch_size)
 
-val_dataset.cuda()
+# val_dataset.cuda()
 val_sampler = SequentialSampler(val_dataset)
 val_dataloader = DataLoader(val_dataset, sampler=val_sampler, batch_size=train_batch_size//2)
 
-test_dataset.cuda()
+# test_dataset.cuda()
 test_sampler = SequentialSampler(test_dataset)
 test_dataloader = DataLoader(test_dataset, sampler=test_sampler, batch_size=train_batch_size//2)
 

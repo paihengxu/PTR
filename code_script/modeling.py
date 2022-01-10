@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from arguments import get_model_classes, get_args
+from arguments import get_model_classes, get_args, DEVICE
 
 class Model(torch.nn.Module):
 
@@ -48,7 +48,7 @@ def get_model(tokenizer, prompt_label_idx):
     model = Model(args, tokenizer, prompt_label_idx)
     if torch.cuda.device_count() > 1:
         model = torch.nn.DataParallel(model)
-    model.cuda()
+    model.to(DEVICE)
     return model
 
 def get_tokenizer(special=[]):

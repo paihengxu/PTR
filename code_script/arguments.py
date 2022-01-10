@@ -24,6 +24,8 @@ _MODEL_CLASSES = {
         'model':AlbertModel,
     }
 }
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 def get_args_parser():
 

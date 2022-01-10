@@ -3,7 +3,7 @@ import numpy as np
 from torch.utils.data import Dataset
 import json
 from tqdm import tqdm
-from arguments import get_args
+from arguments import get_args, DEVICE
 
 class DictDataset(Dataset):
     """A dataset of tensors that uses a dictionary for key-value mappings"""
@@ -79,7 +79,7 @@ class REPromptDataset(DictDataset):
                 original = tokenizer.encode(" ".join(temp), add_special_tokens=False)
                 final =  tokenizer.encode(" ".join(_temp), add_special_tokens=False)
 
-                assert len(original) == len(final)
+                # assert len(original) == len(final)
                 self.temp_ids[name]['label_ids'] += [final[pos] for pos in _labels_index]
 
                 for pos in _labels_index:
@@ -107,7 +107,7 @@ class REPromptDataset(DictDataset):
             for j in range(len(self.prompt_id_2_label[self.rel2id[name]])):
                 self.prompt_id_2_label[self.rel2id[name]][j] = self.temp_ids[name]['label_ids'][j]
 
-        self.prompt_id_2_label = self.prompt_id_2_label.long().cuda()
+        self.prompt_id_2_label = self.prompt_id_2_label.long().to(DEVICE)
         
         self.prompt_label_idx = [
             torch.Tensor(i).long() for i in self.set
