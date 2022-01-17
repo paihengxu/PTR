@@ -166,11 +166,13 @@ train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=t
 
 val_dataset.cuda()
 val_sampler = SequentialSampler(val_dataset)
-val_dataloader = DataLoader(val_dataset, sampler=val_sampler, batch_size=train_batch_size//2)
+# val_dataloader = DataLoader(val_dataset, sampler=val_sampler, batch_size=train_batch_size//2)
+val_dataloader = DataLoader(val_dataset, sampler=val_sampler, batch_size=train_batch_size)
 
 test_dataset.cuda()
 test_sampler = SequentialSampler(test_dataset)
-test_dataloader = DataLoader(test_dataset, sampler=test_sampler, batch_size=train_batch_size//2)
+# test_dataloader = DataLoader(test_dataset, sampler=test_sampler, batch_size=train_batch_size//2)
+test_dataloader = DataLoader(test_dataset, sampler=test_sampler, batch_size=train_batch_size)
 
 model = get_model(tokenizer, train_dataset.prompt_label_idx)
 optimizer, scheduler, optimizer_new_token, scheduler_new_token = get_optimizer(model, train_dataloader)
@@ -241,6 +243,7 @@ torch.save(model.state_dict(), args.output_dir+"/"+'parameter'+str(last_epoch)+"
 # mi_f1, _ = evaluate(model, test_dataset, test_dataloader)
 
 model.load_state_dict(torch.load(args.output_dir+"/"+'parameter'+str(last_epoch)+".pkl"))
-mi_f1, _ = evaluate(model, test_dataset, test_dataloader)
+mi_f1, tmp_f1 = evaluate(model, test_dataset, test_dataloader)
 
-print (mi_f1)
+print("f1:", mi_f1)
+print(tmp_f1)

@@ -3,9 +3,9 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 python3 run_prompt.py \
 --data_dir ../datasets/semeval \
 --output_dir ../results/semeval \
---model_type bert \
---model_name_or_path bert-base-cased \
---per_gpu_train_batch_size 8 \
+--model_type roberta \
+--model_name_or_path roberta-large \
+--per_gpu_train_batch_size 1 \
 --gradient_accumulation_steps 1 \
 --max_seq_length 512 \
 --warmup_steps 500 \
