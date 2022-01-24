@@ -22,11 +22,20 @@ def get_temps(tokenizer):
             #     (i[6],)
             # ]
             tmp = 'irrelevant' if info['name'] == 'Other' else 'relevant'
-            info['labels'] = [
-                (i[2],),
-                (tmp,),
-                (i[3],)
-            ]
+            if i[0] == '1':
+                info['labels'] = [
+                    (i[2],),
+                    (tmp,),
+                    (i[3],)
+                ]
+            elif i[0] == '2':
+                info['labels'] = [
+                    (i[3],),
+                    (tmp,),
+                    (i[2],)
+                ]
+            else:
+                raise ValueError('Invalid identifier in temp.txt', i[0])
             print (info)
             temps[info['name']] = info
     return temps
