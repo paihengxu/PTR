@@ -22,7 +22,7 @@ def get_temps(tokenizer):
             #     (i[6],)
             # ]
             tmp = 'irrelevant' if info['name'] == 'Other' else 'relevant'
-            if i[0] == '1':
+            if i[0] == '0':
                 info['labels'] = [
                     (i[2],),
                     (tmp,),
