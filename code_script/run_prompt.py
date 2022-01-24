@@ -185,6 +185,7 @@ mx_epoch = None
 last_epoch = None
 
 for epoch in trange(int(args.num_train_epochs), desc="Epoch"):
+    print (args)
     model.train()
     model.zero_grad()
     tr_loss = 0.0
@@ -221,7 +222,7 @@ for epoch in trange(int(args.num_train_epochs), desc="Epoch"):
             optimizer_new_token.step()
             scheduler_new_token.step()
             model.zero_grad()
-            print (args)
+            # print (args)
             global_step += 1
             print (tr_loss/global_step, mx_res)
 
@@ -239,11 +240,14 @@ torch.save(model.state_dict(), args.output_dir+"/"+'parameter'+str(last_epoch)+"
 # print (hist_mi_f1)
 # print (hist_ma_f1)
 
-# model.load_state_dict(torch.load(args.output_dir+"/"+'parameter'+str(mx_epoch)+".pkl"))
-# mi_f1, _ = evaluate(model, test_dataset, test_dataloader)
+model.load_state_dict(torch.load(args.output_dir+"/"+'parameter'+str(mx_epoch)+".pkl"))
+mi_f1, class_f1 = evaluate(model, test_dataset, test_dataloader)
+
+print("max_epoch: f1:", mi_f1)
+print(class_f1)
 
 model.load_state_dict(torch.load(args.output_dir+"/"+'parameter'+str(last_epoch)+".pkl"))
-mi_f1, tmp_f1 = evaluate(model, test_dataset, test_dataloader)
+mi_f1, class_f1 = evaluate(model, test_dataset, test_dataloader)
 
-print("f1:", mi_f1)
-print(tmp_f1)
+print("last_epoch f1:", mi_f1)
+print(class_f1)

@@ -4,8 +4,8 @@ python3 run_prompt.py \
 --data_dir ../datasets/semeval \
 --output_dir ../results/semeval \
 --model_type roberta \
---model_name_or_path roberta-large \
---per_gpu_train_batch_size 1 \
+--model_name_or_path roberta-base \
+--per_gpu_train_batch_size 4 \
 --gradient_accumulation_steps 1 \
 --max_seq_length 512 \
 --warmup_steps 500 \
