@@ -64,7 +64,7 @@ def f1_score(output, label, rel_num, na_num):
         prec = sum(correct_by_relation.values()) / sum(guess_by_relation.values())    
         micro_f1 = 2 * recall * prec / (recall+prec)
 
-    return micro_f1, f1_by_relation
+    return micro_f1, f1_by_relation, prec, prec_by_relation, recall, recall_by_relation
 
 def evaluate(model, dataset, dataloader):
     model.eval()
@@ -92,8 +92,8 @@ def evaluate(model, dataset, dataloader):
         np.save("all_labels.npy", all_labels)
 
         pred = np.argmax(scores, axis = -1)
-        mi_f1, ma_f1 = f1_score(pred, all_labels, dataset.num_class, dataset.NA_NUM)
-        return mi_f1, ma_f1
+        mi_f1, ma_f1, prec, prec_by_relation, recall, recall_by_relation = f1_score(pred, all_labels, dataset.num_class, dataset.NA_NUM)
+        return mi_f1, ma_f1, prec, prec_by_relation, recall, recall_by_relation
 
 args = get_args_parser()
 def set_seed(seed):
@@ -226,7 +226,7 @@ for epoch in trange(int(args.num_train_epochs), desc="Epoch"):
             global_step += 1
             print (tr_loss/global_step, mx_res)
 
-    mi_f1, ma_f1 = evaluate(model, val_dataset, val_dataloader)
+    mi_f1, ma_f1, _, _, _, _ = evaluate(model, val_dataset, val_dataloader)
     hist_mi_f1.append(mi_f1)
     hist_ma_f1.append(ma_f1)
     if mi_f1 > mx_res:
@@ -240,14 +240,17 @@ torch.save(model.state_dict(), args.output_dir+"/"+'parameter'+str(last_epoch)+"
 # print (hist_mi_f1)
 # print (hist_ma_f1)
 
-model.load_state_dict(torch.load(args.output_dir+"/"+'parameter'+str(mx_epoch)+".pkl"))
-mi_f1, class_f1 = evaluate(model, test_dataset, test_dataloader)
+for _model_name, model_num in [('max_epoch', str(mx_epoch)), ('last_epoch', str(last_epoch))]:
+    model.load_state_dict(torch.load(args.output_dir+"/"+'parameter'+model_num+".pkl"))
+    mi_f1, class_f1, prec, class_prec, recall, class_recall = evaluate(model, test_dataset, test_dataloader)
 
-print("max_epoch: f1:", mi_f1)
-print(class_f1)
+    print(f"\n{_model_name}:\nf1: {mi_f1}, precision: {prec}, recall: {recall}")
+    print("class f1", class_f1)
+    print("class precision", class_prec)
+    print("class recall", class_prec)
 
-model.load_state_dict(torch.load(args.output_dir+"/"+'parameter'+str(last_epoch)+".pkl"))
-mi_f1, class_f1 = evaluate(model, test_dataset, test_dataloader)
-
-print("last_epoch f1:", mi_f1)
-print(class_f1)
+# model.load_state_dict(torch.load(args.output_dir+"/"+'parameter'+str(last_epoch)+".pkl"))
+# mi_f1, class_f1, prec, class_prec, recall, class_recall = evaluate(model, test_dataset, test_dataloader)
+#
+# print("last_epoch f1:", mi_f1)
+# print(class_f1)
