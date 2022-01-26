@@ -7,62 +7,7 @@ from data_prompt import REPromptDataset
 from arguments import get_args_parser
 from templating import get_temps
 from torch.utils.data import DataLoader, SequentialSampler
-
-
-def f1_score(output, label, rel_num, na_num):
-    correct_by_relation = Counter()
-    guess_by_relation = Counter()
-    gold_by_relation = Counter()
-
-    for i in range(len(output)):
-        guess = output[i]
-        gold = label[i]
-
-        if guess == na_num:
-            guess = 0
-        elif guess < na_num:
-            guess += 1
-
-        if gold == na_num:
-            gold = 0
-        elif gold < na_num:
-            gold += 1
-
-        if gold == 0 and guess == 0:
-            continue
-        if gold == 0 and guess != 0:
-            guess_by_relation[guess] += 1
-        if gold != 0 and guess == 0:
-            gold_by_relation[gold] += 1
-        if gold != 0 and guess != 0:
-            guess_by_relation[guess] += 1
-            gold_by_relation[gold] += 1
-            if gold == guess:
-                correct_by_relation[gold] += 1
-
-    f1_by_relation = Counter()
-    recall_by_relation = Counter()
-    prec_by_relation = Counter()
-    for i in range(1, rel_num):
-        recall = 0
-        if gold_by_relation[i] > 0:
-            recall = correct_by_relation[i] / gold_by_relation[i]
-        precision = 0
-        if guess_by_relation[i] > 0:
-            precision = correct_by_relation[i] / guess_by_relation[i]
-        if recall + precision > 0:
-            f1_by_relation[i] = 2 * recall * precision / (recall + precision)
-        recall_by_relation[i] = recall
-        prec_by_relation[i] = precision
-
-    micro_f1 = 0
-    if sum(guess_by_relation.values()) != 0 and sum(correct_by_relation.values()) != 0:
-        recall = sum(correct_by_relation.values()) / sum(gold_by_relation.values())
-        prec = sum(correct_by_relation.values()) / sum(guess_by_relation.values())
-        micro_f1 = 2 * recall * prec / (recall + prec)
-        print(prec, recall)
-
-    return micro_f1, f1_by_relation, prec, prec_by_relation, recall, recall_by_relation
+from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
 
 
 def evaluate(model, dataset, dataloader):
@@ -91,9 +36,13 @@ def evaluate(model, dataset, dataloader):
         np.save("all_labels.npy", all_labels)
 
         pred = np.argmax(scores, axis=-1)
-        mi_f1, ma_f1, prec, prec_by_relation, recall, recall_by_relation = f1_score(pred, all_labels, dataset.num_class,
-                                                                                    dataset.NA_NUM)
-        return mi_f1, ma_f1, prec, prec_by_relation, recall, recall_by_relation
+        # acc, f1, conf_mat = f1_score(pred, all_labels, dataset.num_class,
+        #                              dataset.NA_NUM)
+        acc = accuracy_score(y_true=all_labels, y_pred=pred)
+        mi_f1 = f1_score(y_true=all_labels, y_pred=pred, average='micro')
+        ma_f1 = f1_score(y_true=all_labels, y_pred=pred, average='macro')
+        conf_mat = confusion_matrix(y_true=all_labels, y_pred=pred)
+    return acc, mi_f1, ma_f1, conf_mat
 
 
 args = get_args_parser()
@@ -121,9 +70,7 @@ test_dataloader = DataLoader(test_dataset, sampler=test_sampler, batch_size=trai
 model = get_model(tokenizer, train_dataset.prompt_label_idx)
 
 model.load_state_dict(torch.load(args.output_dir + "/" + 'parameter4.pkl'))
-mi_f1, class_f1, prec, class_prec, recall, class_recall = evaluate(model, test_dataset, test_dataloader)
+acc, mi_f1, ma_f1, conf_mat = evaluate(model, test_dataset, test_dataloader)
 
-print(f"f1: {mi_f1}, precision: {prec}, recall: {recall}")
-print("class f1", class_f1)
-print("class precision", class_prec)
-print("class recall", class_prec)
+print(f"acc: {acc}, micro-f1: {mi_f1}, macro-f1: {ma_f1}")
+print(conf_mat)
